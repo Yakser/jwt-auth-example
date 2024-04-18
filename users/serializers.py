@@ -20,6 +20,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "role",
             "password",
             "email",
         ]
@@ -39,4 +40,5 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "is_staff",
+            "role",
         ]
