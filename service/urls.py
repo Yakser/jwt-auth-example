@@ -11,7 +11,8 @@ schema_view = get_schema_view(
         description="Service API docs",
     ),
     public=True,
-    permission_classes=[IsAdminUser],
+    permission_classes=[],
+    authentication_classes=[],
 )
 
 urlpatterns = [

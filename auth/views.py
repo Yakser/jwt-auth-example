@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -9,6 +10,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.middleware import csrf
 
 from auth import entities
+# from auth.serializers import GetTokenSerializer
+from drf_yasg.utils import swagger_auto_schema
+
+from auth.serializers import GetTokenSerializer
 
 
 def get_tokens_for_user(user):
@@ -21,8 +26,15 @@ def get_tokens_for_user(user):
 
 
 class GetTokenView(APIView):
-    permission_classes = [AllowAny]
-    # todo: serializer
+    authentication_classes = []
+    permission_classes = []
+    serializer_class = GetTokenSerializer
+
+    @swagger_auto_schema(
+        request_body=GetTokenSerializer,
+        responses={200: openapi.Response("Successful response")},
+        operation_description="Данный метод в заголовке запроса возвращает access_token."
+    )
     def post(self, request, format=None):
         response = Response()
         username = request.data.get('username', None)
@@ -32,14 +44,6 @@ class GetTokenView(APIView):
             if user.is_active:
                 data = get_tokens_for_user(user)
                 response.set_cookie(
-                    key=settings.SIMPLE_JWT['AUTH_COOKIE'],
-                    value=data["access"],
-                    expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
-                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                )
-                response.set_cookie(
                     key=settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME'],
                     value=data["refresh"],
                     expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
@@ -47,8 +51,7 @@ class GetTokenView(APIView):
                     httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
                     samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
                 )
-                csrf.get_token(request)
-                response.data = data
+                response['Authorization'] = f'Bearer {data["access"]}'
                 return response
 
             return Response({"detail": entities.Errors.USER_DEACTIVATED.value}, status=status.HTTP_403_FORBIDDEN)
@@ -57,8 +60,13 @@ class GetTokenView(APIView):
 
 
 class RefreshTokenView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
-    # todo: serializer
+
+    @swagger_auto_schema(
+        responses={200: openapi.Response("Successful response")},
+        operation_description="Для обновления токена доступа, необходимо, чтобы в Cookie был refresh_token. Данный метод в заголовке запроса возвращает новый access_token."
+    )
     def get(self, request, format=None):
         response = Response()
 
@@ -81,15 +89,6 @@ class RefreshTokenView(APIView):
         refresh.set_iat()
 
         data["refresh"] = str(refresh)
-
-        response.set_cookie(
-            key=settings.SIMPLE_JWT['AUTH_COOKIE'],
-            value=data["access"],
-            expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
-            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-            httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-        )
         response.set_cookie(
             key=settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME'],
             value=data["refresh"],
@@ -99,5 +98,6 @@ class RefreshTokenView(APIView):
             samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
         )
 
-        response.data = data
+        response['Authorization'] = f'Bearer {data["access"]}'
+
         return response

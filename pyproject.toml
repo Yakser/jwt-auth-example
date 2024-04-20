@@ -1,4 +1,5 @@
 [tool.poetry]
+package-mode = false
 name = "jwt-auth-example"
 version = "0.1.0"
 description = ""
