@@ -3,14 +3,11 @@ from django.contrib.auth import authenticate
 from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.middleware import csrf
 
 from auth import entities
-# from auth.serializers import GetTokenSerializer
 from drf_yasg.utils import swagger_auto_schema
 
 from auth.serializers import GetTokenSerializer
@@ -35,7 +32,7 @@ class GetTokenView(APIView):
         responses={200: openapi.Response("Successful response")},
         operation_description="Данный метод в заголовке запроса возвращает access_token."
     )
-    def post(self, request, format=None):
+    def post(self, request):
         response = Response()
         username = request.data.get('username', None)
         password = request.data.get('password', None)
@@ -49,7 +46,7 @@ class GetTokenView(APIView):
                     expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
                     secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
                     httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                 )
                 response['Authorization'] = f'Bearer {data["access"]}'
                 return response
