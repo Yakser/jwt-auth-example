@@ -2,10 +2,12 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from drf_yasg import openapi
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from django.contrib.auth import logout
+
 
 from auth import entities
 from drf_yasg.utils import swagger_auto_schema
@@ -98,3 +100,30 @@ class RefreshTokenView(APIView):
         response['Authorization'] = f'Bearer {data["access"]}'
 
         return response
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        responses={200: openapi.Response("Successful response")},
+        operation_description="Завершение сеанса пользователя."
+    )
+    def post(self, request):
+        try:
+            try:
+                refresh = RefreshToken(request.COOKIES.get(settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME']))
+                refresh.blacklist()
+                logout(request)
+            except KeyError:
+                return Response(
+                    {"error": "Provide refresh_token in data"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            response = Response({'message': 'Logged out and blacklisted token'}, status=status.HTTP_200_OK)
+            response.delete_cookie('refresh_token')
+
+            return response
+        except TokenError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

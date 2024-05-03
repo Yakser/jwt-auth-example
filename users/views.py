@@ -7,8 +7,6 @@ from rest_framework.generics import (
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from core.permissions import IsOwnerOrReadOnly
 from users.serializers import UserDetailSerializer, UserListSerializer
@@ -37,23 +35,3 @@ class CurrentUser(GenericAPIView):
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        try:
-            # get refresh token from request body
-            try:
-                refresh_token = request.data["refresh_token"]
-            except KeyError:
-                return Response(
-                    {"error": "Provide refresh_token in data"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            # blacklist the refresh token
-            RefreshToken(refresh_token).blacklist()
-            return Response(status=status.HTTP_205_RESET_CONTENT)
-        except TokenError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)

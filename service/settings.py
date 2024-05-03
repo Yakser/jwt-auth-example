@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     # Plugins
     "corsheaders",
     "drf_yasg",
+    "rest_framework_simplejwt.token_blacklist"
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,10 +56,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=20),
-    # "REFRESH_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=30),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
@@ -79,8 +78,8 @@ SIMPLE_JWT = {
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
     "JTI_CLAIM": "jti",
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
-    "SLIDING_TOKEN_LIFETIME": timedelta(seconds=20),
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=1),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(minutes=30),
     'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
     'AUTH_COOKIE_DOMAIN': None,  # A string like "example.com", or None for standard domain cookie.
     'AUTH_COOKIE_SECURE': True,  # Whether the auth cookies should be secure (https:// only).
