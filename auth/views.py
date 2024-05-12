@@ -69,8 +69,11 @@ class RefreshTokenView(APIView):
     def get(self, request, format=None):
         response = Response()
 
-        refresh = RefreshToken(request.COOKIES.get(settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME']))
+        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME'])
+        if refresh_token is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        refresh = RefreshToken(refresh_token)
         data = {"access": str(refresh.access_token)}
 
         # if api_settings.ROTATE_REFRESH_TOKENS:
@@ -103,7 +106,7 @@ class RefreshTokenView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
 
     @swagger_auto_schema(
         responses={200: openapi.Response("Successful response")},
