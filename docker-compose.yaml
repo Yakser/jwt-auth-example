@@ -3,10 +3,11 @@ version: '3'
 services:
   django_app:
     build:
-      context: .
+      context: ./
       dockerfile: Dockerfile
+    command: [ "bash", "./scripts/startup.sh" ]
     volumes:
-      - .:/code
+      - .:/service
     ports:
       - "8000:8000"
     environment:
