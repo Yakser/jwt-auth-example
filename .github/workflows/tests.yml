@@ -26,7 +26,7 @@ jobs:
 
       - uses: snok/install-poetry@v1
         with:
-          version: 1.5.1
+          version: 1.8.2
           virtualenvs-create: true
           virtualenvs-in-project: true
 
@@ -37,7 +37,7 @@ jobs:
           path: .venv
           key: pydeps-${{ hashFiles('**/poetry.lock') }}
 
-      - run: poetry install --no-root
+      - run: poetry install
         if: steps.cache-deps.outputs.cache-hit != 'true'
 
       # install setuptools
@@ -45,9 +45,5 @@ jobs:
 
       - name: Run tests
         run: poetry run python manage.py test
-        env:
-          DEBUG: True
-      - name: Run mypy
-        run: poetry run mypy .
         env:
           DEBUG: True

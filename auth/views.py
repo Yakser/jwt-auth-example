@@ -1,17 +1,15 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth import logout
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from django.contrib.auth import logout
-
 
 from auth import entities
-from drf_yasg.utils import swagger_auto_schema
-
 from auth.serializers import GetTokenSerializer
 
 
@@ -19,8 +17,8 @@ def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
 
     return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
     }
 
 
@@ -32,30 +30,36 @@ class GetTokenView(APIView):
     @swagger_auto_schema(
         request_body=GetTokenSerializer,
         responses={200: openapi.Response("Successful response")},
-        operation_description="Данный метод в заголовке запроса возвращает access_token."
+        operation_description="Данный метод в заголовке запроса возвращает access_token.",
     )
     def post(self, request):
         response = Response()
-        username = request.data.get('username', None)
-        password = request.data.get('password', None)
+        username = request.data.get("username", None)
+        password = request.data.get("password", None)
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
                 data = get_tokens_for_user(user)
                 response.set_cookie(
-                    key=settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME'],
+                    key=settings.SIMPLE_JWT["REFRESH_TOKEN_COOKIE_NAME"],
                     value=data["refresh"],
-                    expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
-                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    expires=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
+                    secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],
+                    httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],
+                    samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],
                 )
-                response['Authorization'] = f'Bearer {data["access"]}'
+                response["Authorization"] = f'Bearer {data["access"]}'
                 return response
 
-            return Response({"detail": entities.Errors.USER_DEACTIVATED.value}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": entities.Errors.USER_DEACTIVATED.value},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-        return Response({"detail": entities.Errors.WRONG_CREDENTIALS.value}, status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {"detail": entities.Errors.WRONG_CREDENTIALS.value},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
 
 class RefreshTokenView(APIView):
@@ -64,12 +68,16 @@ class RefreshTokenView(APIView):
 
     @swagger_auto_schema(
         responses={200: openapi.Response("Successful response")},
-        operation_description="Для обновления токена доступа, необходимо, чтобы в Cookie был refresh_token. Данный метод в заголовке запроса возвращает новый access_token."
+        operation_description="Для обновления токена доступа необходимо, "
+        "чтобы в Cookie был refresh_token. "
+        "Данный метод в заголовке запроса возвращает новый access_token.",
     )
-    def get(self, request, format=None):
+    def get(self, request):
         response = Response()
 
-        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME'])
+        refresh_token = request.COOKIES.get(
+            settings.SIMPLE_JWT["REFRESH_TOKEN_COOKIE_NAME"]
+        )
         if refresh_token is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -92,15 +100,15 @@ class RefreshTokenView(APIView):
 
         data["refresh"] = str(refresh)
         response.set_cookie(
-            key=settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME'],
+            key=settings.SIMPLE_JWT["REFRESH_TOKEN_COOKIE_NAME"],
             value=data["refresh"],
-            expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
-            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-            httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+            expires=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
+            secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],
+            httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],
+            samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],
         )
 
-        response['Authorization'] = f'Bearer {data["access"]}'
+        response["Authorization"] = f'Bearer {data["access"]}'
 
         return response
 
@@ -110,12 +118,16 @@ class LogoutView(APIView):
 
     @swagger_auto_schema(
         responses={200: openapi.Response("Successful response")},
-        operation_description="Завершение сеанса пользователя."
+        operation_description="Завершение сеанса пользователя.",
     )
     def post(self, request):
         try:
             try:
-                refresh = RefreshToken(request.COOKIES.get(settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE_NAME']))
+                refresh = RefreshToken(
+                    request.COOKIES.get(
+                        settings.SIMPLE_JWT["REFRESH_TOKEN_COOKIE_NAME"]
+                    )
+                )
                 refresh.blacklist()
                 logout(request)
             except KeyError:
@@ -124,8 +136,11 @@ class LogoutView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            response = Response({'message': 'Logged out and blacklisted token'}, status=status.HTTP_200_OK)
-            response.delete_cookie('refresh_token')
+            response = Response(
+                {"message": "Logged out and blacklisted token"},
+                status=status.HTTP_200_OK,
+            )
+            response.delete_cookie("refresh_token")
 
             return response
         except TokenError:

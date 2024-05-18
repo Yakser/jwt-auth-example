@@ -4,7 +4,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    role = models.TextField(null=False, blank=False, default='common')
+    role = models.TextField(null=False, blank=False, default="common")
 
     class Meta:
         verbose_name = "Пользователь"
