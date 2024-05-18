@@ -2,7 +2,6 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import config  # type: ignore
-from django.middleware.csrf import CsrfViewMiddleware
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,7 +11,7 @@ SECRET_KEY: str = config(
 
 DEBUG: bool = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS: list[str] = ['localhost', '0.0.0.0', '*']
+ALLOWED_HOSTS: list[str] = ["localhost", "0.0.0.0", "*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -28,7 +27,7 @@ INSTALLED_APPS = [
     # Plugins
     "corsheaders",
     "drf_yasg",
-    "rest_framework_simplejwt.token_blacklist"
+    "rest_framework_simplejwt.token_blacklist",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -38,7 +37,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 REST_FRAMEWORK = {
@@ -80,13 +79,13 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=1),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(minutes=30),
-    'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
-    'AUTH_COOKIE_DOMAIN': None,  # A string like "example.com", or None for standard domain cookie.
-    'AUTH_COOKIE_SECURE': True,  # Whether the auth cookies should be secure (https:// only).
-    'AUTH_COOKIE_HTTP_ONLY': True,  # Http only cookie flag.It's not fetch by javascript.
-    'AUTH_COOKIE_PATH': '/',  # The path of the auth cookie.
-    'AUTH_COOKIE_SAMESITE': None,  # Whether to set the flag restricting cookie leaks on cross-site requests.
-    'REFRESH_TOKEN_COOKIE_NAME': 'refresh_token'
+    "AUTH_COOKIE": "access_token",  # Cookie name. Enables cookies if value is set.
+    "AUTH_COOKIE_DOMAIN": None,  # A string like "example.com", or None for standard domain cookie.
+    "AUTH_COOKIE_SECURE": True,  # Whether the auth cookies should be secure (https:// only).
+    "AUTH_COOKIE_HTTP_ONLY": True,  # Http only cookie flag.It's not fetch by javascript.
+    "AUTH_COOKIE_PATH": "/",  # The path of the auth cookie.
+    "AUTH_COOKIE_SAMESITE": None,  # Whether to set the flag restricting cookie leaks on cross-site requests.
+    "REFRESH_TOKEN_COOKIE_NAME": "refresh_token",
 }
 
 CORS_ALLOW_CREDENTIALS = True
@@ -135,7 +134,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_EXPOSE_HEADERS = ['Authorization']
+CORS_EXPOSE_HEADERS = ["Authorization"]
 
 LANGUAGE_CODE = "ru-ru"
 
